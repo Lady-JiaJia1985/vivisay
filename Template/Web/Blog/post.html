@@ -1,0 +1,99 @@
+<include file="Public:header" />
+<include file="Public:nav" />
+<neq name="post.thumb_img" value="">
+    <!--请求七牛生成400x240缩略图-->
+    <img src="{$post.thumb_img}-post.banner" width="100%" class="am-img-responsive" alt=""/>
+</neq>
+<div class="am-g am-g-fixed blog-g-fixed vivi-blog-main">
+    <div class="am-u-lg-8">
+        <article class="blog-main">
+            <h1 class="am-article-title blog-title">
+                <span>{$post.title}</span>
+            </h1>
+            <p class="am-article-meta blog-meta vivi-blog-meta">
+                作者：{$post.author}&nbsp;&nbsp;发表于：{$post.post_time}
+            </p>
+            <p class="am-article-meta blog-meta vivi-blog-meta">
+                评论：{$post.comments}&nbsp;&nbsp;浏览数：{$post.views}&nbsp;&nbsp;分类：
+                <volist name="post.category" id="cat">
+                    <a href="#">{$cat.cat_name}</a>&nbsp;&nbsp;
+                </volist>
+            </p>
+            <div class="am-g blog-content">
+                <div class="am-u-lg-12">
+                    {$post.content}
+                </div>
+            </div>
+
+        </article>
+
+        <hr class="am-article-divider blog-hr">
+
+        <ul class="am-pagination blog-pagination">
+            <neq name="prepostid" value=''>
+                <li class="am-pagination-prev"><a href="__CONTROLLER__/{$prepostid}">&laquo; 上一篇</a></li>
+            <else/>
+                <li class="am-pagination-prev"><span>&laquo; 上一篇</span></li>
+            </neq>
+            <neq name="nxtpostid" value=''>
+                <li class="am-pagination-next"><a href="__CONTROLLER__/{$nxtpostid}">下一篇 &raquo;</a></li>
+            <else/>
+                <li class="am-pagination-next"><span>下一篇 &raquo;</span></li>
+            </neq>
+        </ul>
+
+        <hr class="am-article-divider blog-hr">
+
+        <!-- 多说评论框 start -->
+        <!--<div data-am-widget="duoshuo" class="am-duoshuo am-duoshuo-default" data-ds-short-name="vivisay">-->
+            <!--<div class="ds-thread" data-thread-key="请替换成文章的在多说的thread-key" data-title="请替换成文章的标题" data-url="请替换成文章的网址"></div>-->
+        <!--</div>-->
+        <!-- 多说评论框 end -->
+
+        <ul class="am-comments-list am-comments-list-flip">
+            <volist name="comment" id="com">
+                <li class="am-comment">
+                    <span>
+                        <img src="__PUBLIC__/img/web/default_user.png" alt="" class="am-comment-avatar" width="48" height="48"/>
+                    </span>
+                    <div class="am-comment-main">
+                        <header class="am-comment-hd">
+                            <!--<h3 class="am-comment-title">评论标题</h3>-->
+                            <div class="am-comment-meta">
+                                <span class="am-comment-author">{$com.from_user}</span>
+                                评论于 <time datetime="" title="">{$com.post_time}</time>
+                            </div>
+                        </header>
+                        <div class="am-comment-bd">
+                            {$com.content}
+                        </div>
+                    </div>
+                </li>
+            </volist>
+        </ul>
+    </div>
+
+    <div class="am-u-lg-4 blog-sidebar">
+        <div class="am-panel-group">
+            <section class="am-panel am-panel-default">
+                <div class="am-panel-hd">推荐文章</div>
+                <ul class="am-list blog-list">
+                    <volist name="recommendpost" id="repost">
+                        <li><a href="__CONTROLLER__/{$repost.id}">{$repost.title}</a></li>
+                    </volist>
+                </ul>
+            </section>
+            <section class="am-panel am-panel-default">
+                <div class="am-panel-hd">关于我</div>
+                <div class="am-panel-bd">
+                    <p>前所未有的中文云端字型服务，让您在 web 平台上自由使用高品质中文字体，跨平台、可搜寻，而且超美。云端字型是我们的事业，推广字型学知识是我们的志业。从字体出发，关心设计与我们的生活，justfont blog
+                        正是為此而生。</p>
+                    <a class="am-btn am-btn-success am-btn-sm" href="#">查看更多 →</a>
+                </div>
+            </section>
+        </div>
+    </div>
+
+</div>
+<include file="Public:footer" />
+

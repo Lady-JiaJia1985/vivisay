@@ -1,0 +1,87 @@
+@charset "UTF-8";
+body { min-height: 100%;}
+/*reset link color*/
+a { color: #66CCCC; }
+
+/*reset header background color*/
+.vivi-header {
+    background-color: #66CCCC;
+}
+
+/*menu icon in fixed header, top needs to set to 0*/
+.vivi-menu-topright .am-menu-toggle {
+    top: 0;
+}
+
+/*blog post content*/
+.vivi-blog-main {
+    margin-top: 2rem;
+}
+
+/*blog post meta*/
+.vivi-blog-meta {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+/*to avoid blog content images overflow*/
+.blog-content img,
+.blog-team img {
+    max-width: 100%;
+    height: auto;
+}
+
+/*comments,views,date at blog list page*/
+.vivi-list-comment {
+    padding: 0;
+    padding-top: 0.4rem;
+}
+
+/*reset titlebar title color*/
+.vivi-titlebar-default .am-titlebar-title {
+    color: #66CCCC;
+}
+.vivi-titlebar-default .am-titlebar-title:before {
+    border-left: 3px solid #66CCCC;
+}
+.vivi-titlebar-default a {
+    color: #66CCCC;
+}
+
+/*gallery list reset*/
+.vivi-gallery-wrap {
+    padding: 10px 20px 10px 10px;
+}
+.vivi-masonry li {
+    width: 50%;
+    float: left;
+}
+.vivi-masonry li .vivi-gallery-item {
+    padding: 0;
+}
+.vivi-masonry li .vivi-gallery-item .vivi-gallery-desc {
+    padding: 5px 10px;
+}
+.vivi-masonry li .vivi-gallery-item .vivi-gallery-desc .am-gallery-title {
+    margin-top: 0;
+}
+
+/*gallery detail*/
+.vivi-gallery-picture {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+.vivi-gallery-meta {
+    padding: 6px;
+    font-size: 1.4rem;
+}
+
+/*footer resets*/
+.vivi-footer {
+    background-color: #4a4a4a;
+}
+.vivi-footer p {
+    color: #ddd;
+}
+

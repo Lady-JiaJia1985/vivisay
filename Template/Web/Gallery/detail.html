@@ -1,0 +1,23 @@
+<include file="Public:header" />
+<include file="Public:nav" />
+    <ul data-am-widget="gallery" class="am-gallery am-avg-sm-1 am-avg-md-2 am-avg-lg-3 am-gallery-default" data-am-gallery="{pureview:{target:'a'}}" >
+        <volist name="data.src" id="src">
+        <li>
+            <div class="am-gallery-item">
+                <a href="{$src}" class="">
+                    <img src="{$src}?imageView2/2/w/400"  alt="{$data.title}"/>
+                </a>
+            </div>
+        </li>
+        </volist>
+    </ul>
+    <div class="am-g vivi-gallery-meta">
+        <div class="am-u-sm-12">
+            <span>分类：</span>
+            <volist name="data.category" id="cat">
+                <a href="#"><span class="am-badge am-round">{$cat.cat_name}</span></a>
+                <!--<a href="#">{$cat.cat_name}</a>&nbsp;&nbsp;-->
+            </volist>
+        </div>
+    </div>
+<include file="Public:footer" />

@@ -1,0 +1,288 @@
+<include file="Public:header" />
+<body>
+    <include file="Public:nav" />
+    <include file="Public:menu" />
+    <!--main content start-->
+    <section id="main-content">
+        <section class="wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <!--breadcrumbs start -->
+                    <ul class="breadcrumb">
+                        <li><a href="#">文章管理</a></li>
+                        <li class="active">创建文章</li>
+                    </ul>
+                    <!--breadcrumbs end -->
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <section class="panel">
+                        <header class="panel-heading">
+                            发布文章
+                        </header>
+                        <div class="panel-body">
+                            <div class="form">
+                                <form class="cmxform form-horizontal tasi-form" id="post-form">
+                                    <div class="form-group ">
+                                        <label for="title" class="control-label col-lg-2" data-validator="title">文章标题：</label>
+                                        <div class="col-lg-10">
+                                            <input class=" form-control" id="title" type="text" name="title" value="" minlength="1" placeholder="输入文章标题（必填）" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group ">
+                                        <label for="subtitle" class="control-label col-lg-2" data-validator="sub_title">副标题：</label>
+                                        <div class="col-lg-10">
+                                            <input class="form-control " id="subtitle" type="text" name="sub_title" value="" placeholder="输入副标题（可选）" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group ">
+                                        <label for="author" class="control-label col-lg-2" data-validator="author">文章作者：</label>
+                                        <div class="col-lg-10">
+                                            <input class="form-control " id="author" type="text" name="author" value="" placeholder="输入文章作者（必填）" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group ">
+                                        <label class="control-label col-lg-2" data-validator="category[]">文章分类（至少选择一个）：</label>
+                                        <div class="col-lg-10">
+                                            <?php
+                                            foreach($cats as $v){
+                                            echo "<label class='checkbox-inline'><input type='checkbox' value='$v[cat_id]' name='category[]'";
+                                            if(in_array($v['cat_id'],$post['category'])){
+                                            echo "checked";
+                                            }
+                                            echo " />";
+                                            echo "&nbsp;".$v['cat_name']."&nbsp;</label>";
+                                            }
+                                            ?>
+                                        </div>
+                                    </div>
+                                    <div class="form-group ">
+                                        <label class="control-label col-lg-2">文章缩略图（可选）：</label>
+                                        <div class="col-lg-10">
+                                            <img src="" alt="" id="thumbImg" class="img-thumbnail" style="width: 20%;">
+                                        </div>
+                                        <div class="col-lg-10 col-lg-offset-2" style="margin-top: 1rem;">
+                                            <span class="help-block" id="thumbImgUrl"></span>
+                                        </div>
+                                        <div class="col-lg-10 col-lg-offset-2" style="margin-top: 1rem;">
+                                            <button type="button" id="thumb" class="btn btn-default"><i class="icon-cloud-upload"></i> Upload</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group ">
+                                        <label for="content" class="control-label col-lg-2" data-validator="content">文章内容（必填）：</label>
+                                        <div class="col-lg-10">
+                                            <textarea class="form-control " id="content" name="content" style="width:100%;height:360px;"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-lg-offset-2 col-lg-10">
+                                            <button class="btn btn-danger" type="button" data-loading-text="提交中..." onclick="publishPost(this);">发布</button>
+                                            <button class="btn btn-primary" type="button" data-loading-text="提交中..." onclick="savePost(this);">保存(待发布)</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </section>
+    </section>
+
+    <include file="Public:bsmodal" />
+
+<include file="Public:footer" />
+
+<script src="__PUBLIC__/kindeditor/kindeditor-all-min.js"></script>
+<!--<script src="__PUBLIC__/js/kindeditor/plugins/code/prettify.js"></script>-->
+<script type="text/javascript" src="__PUBLIC__/js/jquery.validate.min.js"></script>
+<script>
+    $(document).ready(function(){
+        //图片传七牛
+        $.ajax({url: '__PUBLIC__/kindeditor/misc/keQiniu.php?act=getToken&type=3', async: false, success: function(data){
+            token1 = data.token1;
+            token2 = data.token2;
+            var editor = KindEditor.create('#content', {
+                uploadJson: 'http://upload.qiniu.com/',
+                filePostName: 'file',
+                allowFileManager: true,
+                fileManagerJson: '__PUBLIC__/kindeditor/misc/keQiniu.php?act=fileManage',
+                extraFileUploadParams: {token: token2},
+                token: token1,
+                resizeType: 1,
+                afterCreate: function () {this.sync();},
+                afterBlur: function () { this.sync();console.log($('#content').val());},
+                afterChange: function () {this.sync();}
+            });
+            //单独上传缩略图
+            $('#thumb').click(function () {
+                editor.loadPlugin('image', function () {
+                    editor.plugin.imageDialog({
+                        imageUrl: $('#thumbImgUrl').val(),
+                        clickFn: function (url, title, width, height, border, align) {
+                            //选择图片'确定'后逻辑
+                            $('#thumbImgUrl').html(url);
+                            $('#thumbImg').attr('src', url+'?imageView2/2/w/200');
+//                            $('input[name=thumb_img]').val(url);
+                            editor.hideDialog();
+                        }
+                    });
+                });
+            });
+        }});
+
+        //图片传本地
+//        KindEditor.ready(function(K) {
+//            var editor = K.create('#doc-vld-content', {
+////                cssPath : '../plugins/code/prettify.css',
+//                uploadJson : '__PUBLIC__/kindeditor/php/upload_json.php',
+//                fileManagerJson : '__PUBLIC__/kindeditor/php/file_manager_json.php',
+//                allowFileManager : true,
+//                afterChange: function () {this.sync();}, //同步html内容到元素的value
+//                afterCreate: function () {this.sync();},
+//                afterBlur: function () {this.sync();}
+//            });
+////            prettyPrint();
+//            //单独上传缩略图
+//            K('#thumb').click(function () {
+//                editor.loadPlugin('image', function () {
+//                    editor.plugin.imageDialog({
+//                        imageUrl: K('#doc-vld-name-4').val(),
+//                        clickFn: function (url, title, width, height, border, align) {
+//                            //选择图片'确定'后逻辑
+//                            K('#thumbImgUrl').html(url);
+//                            K('#thumbImg').attr('src', url);
+//                            editor.hideDialog();
+//                        }
+//                    });
+//                });
+//            });
+//        });
+
+        //jquery validate
+        var validator = $("#post-form").validate({
+            //表单验证错误提示放在label后面
+            errorPlacement: function (error, element) {
+                // Append error within linked label
+                $(element)
+                        .closest("form")
+                        .find("label[data-validator='" + element.attr("name") + "']")  //找到label中data-validator属性为验证元素name属性
+                        .append(error);
+            },
+            errorElement: "span",
+            //验证逻辑 待验证元素的name属性
+            rules: {
+                title: {
+                    required: true,
+                    maxlength: 100
+                },
+                sub_title: {
+                    maxlength: 100
+                },
+                author: {
+                    required: true,
+                    maxlength: 50
+                },
+                "category[]": {
+                    required: true
+                },
+                content: {
+                    required: true
+                }
+            },
+            //提示信息
+            messages: {
+                title: {
+                    required: " (必须填写)",
+                    maxlength: " (不能超过100个字)"
+                },
+                sub_title: {
+                    maxlength: " (不能超过100个字)"
+                },
+                author: {
+                    required: " (必须填写)",
+                    maxlength: " (不能超过50个字)"
+                },
+                "category[]": {
+                    required: " (至少选择一个分类)"
+                },
+                content:{
+                    required: " (必须填写)"
+                }
+            },
+            // kindeditor编辑器会将textarea隐藏
+            // 所以需要将ignore:hidden去掉才能正确验证
+            ignore: ""
+        });
+    });
+
+    //publish post
+    var publishPost = function(thisBtn) {
+        var $publishBtn = $(thisBtn);
+        if ($('#post-form').valid()) {
+            //表单验证成功逻辑
+            var act = 'publish';  //发布
+            var thumb_img = $.trim($('#thumbImgUrl').html());  //缩略图
+            var data = $('#post-form').serialize() + '&act=' + act + '&thumb_img=' + thumb_img;
+            $.ajax({
+                url: '__CONTROLLER__/dopost',
+                data: data,
+                type: "POST",
+                beforeSend: function () {
+                    $publishBtn.button('loading')
+                },
+                complete: function () {
+                    $publishBtn.button('reset')
+                },
+                success: function (res) {
+                    result = res;  //vToast的callback拿不到res，所以需要先给result
+                    vToast(result.msg, 2000, function () {
+                        if (result.error == 0) top.location.reload();
+                    });
+                },
+                error: function () {
+                    vToast('网络繁忙或服务器未响应，请重试！');
+                }
+            });
+        } else {
+            //验证失败逻辑
+            vToast('请完整填写内容')
+        }
+    };
+
+    //save post
+    var savePost = function(thisBtn) {
+        var $saveBtn = $(thisBtn);
+        if ($('#post-form').valid()) {
+            //表单验证成功逻辑
+            var act = 'save';  //未发布
+            var thumb_img = $.trim($('#thumbImgUrl').html());  //缩略图
+            var data = $('#post-form').serialize() + '&act=' + act + '&thumb_img=' + thumb_img;
+            $.ajax({
+                url: '__CONTROLLER__/dopost',
+                data: data,
+                type: "POST",
+                beforeSend: function () {
+                    $saveBtn.button('loading')
+                },
+                complete: function () {
+                    $saveBtn.button('reset')
+                },
+                success: function (res) {
+                    result = res;  //vToast的callback拿不到res，所以需要先给result
+                    vToast(result.msg, 2000, function () {
+                        if (result.error == 0) top.location.reload();
+                    });
+                },
+                error: function () {
+                    vToast('网络繁忙或服务器未响应，请重试！');
+                }
+            });
+        } else {
+            //验证失败逻辑
+            vToast('请完整填写内容')
+        }
+    };
+</script>

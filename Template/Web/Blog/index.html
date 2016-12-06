@@ -1,0 +1,70 @@
+<include file="Public:header" />
+<include file="Public:nav" />
+<div data-am-widget="list_news" class="am-list-news am-list-news-default">
+    <!--列表标题-->
+    <div class="am-list-news-hd am-cf">
+        <!--带更多链接-->
+        <a href="" class="">
+            <h2>博客首页</h2>
+            <!--<span class="am-list-news-more am-fr">更多 &raquo;</span>-->
+        </a>
+    </div>
+    <!--文章列表-->
+    <div class="am-list-news-bd">
+        <ul class="am-list">
+            <!--缩略图在标题右边-->
+            <volist name="data.list" id="list">
+                <li class="am-g am-list-item-desced am-list-item-thumbed am-list-item-thumb-right">
+                    <a href="__CONTROLLER__/{$list.id}" style="display: block;width: 100%;">
+                    <div class="am-u-sm-8 am-list-main">
+                        <h3 class="am-list-item-hd">{$list.title}</h3>
+                        <div class="am-list-item-text">{$list.description}</div>
+                    </div>
+                    <neq name="list.thumb_img" value="">
+                        <div class="am-u-sm-4 am-list-thumb">
+                            <!--请求七牛生成150x150缩略图-->
+                            <img src="{$list.thumb_img}-list.thumb" alt="{$list.title}"/>
+                        </div>
+                    </neq>
+                    </a>
+                    <div class="am-u-sm-12 vivi-list-comment">
+                        <span class="am-badge am-radius">{$list.post_time}</span>
+                        <span class="am-badge am-radius"><span class="am-icon-comment-o am-icon-fw"></span>&nbsp;{$list.comments}</span>
+                        <span class="am-badge am-radius"><span class="am-icon-eye am-icon-fw"></span>&nbsp;{$list.views}</span>
+                    </div>
+                </li>
+            </volist>
+        </ul>
+    </div>
+
+</div>
+<!--分页-->
+<ul data-am-widget="pagination" class="am-pagination am-pagination-select">
+    <neq name="data.curPage" value="1">
+        <li class="am-pagination-prev">
+            <!--参与运算时模板渲染不能用.语法-->
+            <a href="__CONTROLLER__/index?cat={$data['category']}&curpage={$data['curPage']-1}" class="">上一页</a>
+        </li>
+    </neq>
+    <neq name="data.pageNum" value="1">
+        <li class="am-pagination-select">
+            <select id="pagination">
+                <for start="1" end="$data.pageNum" comparison="elt" name="i">
+                    <option value="{$i}" <eq name="data.curPage" value="$i">selected</eq>>{$i}</option>
+                </for>
+            </select>
+        </li>
+    </neq>
+    <neq name="data.curPage" value="$data.pageNum">
+        <li class="am-pagination-next ">
+            <a href="__CONTROLLER__/index?cat={$data['category']}&curpage={$data['curPage']+1}" class="">下一页</a>
+        </li>
+    </neq>
+</ul>
+
+<include file="Public:footer" />
+<script>
+    $("#pagination").change(function(){
+        location.href = '__CONTROLLER__/index?cat={$data.category}&curpage=' + $(this).val();
+    });
+</script>

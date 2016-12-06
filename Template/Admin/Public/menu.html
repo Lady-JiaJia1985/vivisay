@@ -1,0 +1,33 @@
+<!--sidebar start-->
+<aside>
+    <div id="sidebar"  class="nav-collapse ">
+        <!-- sidebar menu start-->
+        <ul class="sidebar-menu" id="nav-accordion">
+            <li>
+                <a href="{:U('index/index')}"  class="active">
+                    <i class="icon-home"></i>
+                    <span>首页</span>
+                </a>
+            </li>
+            <volist name="menu" id="m">
+                <li class="sub-menu">
+                    <a href="javascript:;">
+                        <!--<i class="icon-expand-alt"></i>-->
+                        <span>{$m.name}</span>
+                    </a>
+                    <ul class="sub">
+                        <volist name="m.child" id="mch">
+                            <eq name="cur_path" value="$mch[link]">
+                                <li class="active"><a href="__MODULE__/{$mch.link}">{$mch.name}</a></li>
+                                <else/>
+                                <li><a href="__MODULE__/{$mch.link}">{$mch.name}</a></li>
+                            </eq>
+                        </volist>
+                    </ul>
+                </li>
+            </volist>
+        </ul>
+        <!-- sidebar menu end-->
+    </div>
+</aside>
+<!--sidebar end-->

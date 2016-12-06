@@ -1,0 +1,78 @@
+<include file="Public:header" />
+<body class="login-body">
+    <div class="container">
+        <form class="form-signin" method="post" action="{:U('user/dologin')}">
+            <h2 class="form-signin-heading">用户登录</h2>
+            <div class="login-wrap">
+                <input type="text" name="username" class="form-control" placeholder="用户名" autocomplete="off" autofocus>
+                <input type="password" name="password" class="form-control" placeholder="密码" autocomplete="off">
+                <label class="checkbox">
+                    <input type="checkbox" name="autologin" value="Y"> 一周内自动登陆
+                    <span class="pull-right">
+                        <a data-toggle="modal" href="#forgotPass"> 忘记密码?</a>
+                    </span>
+                </label>
+                <button class="btn btn-lg btn-login btn-block" type="submit">登录</button>
+                <!--<p>or you can sign in via social network</p>-->
+                <!--<div class="login-social-link">-->
+                    <!--<a href="index.html" class="facebook">-->
+                        <!--<i class="icon-facebook"></i>-->
+                        <!--Facebook-->
+                    <!--</a>-->
+                    <!--<a href="index.html" class="twitter">-->
+                        <!--<i class="icon-twitter"></i>-->
+                        <!--Twitter-->
+                    <!--</a>-->
+                <!--</div>-->
+                <div class="registration">
+                    还没有注册账号?
+                    <a class="" href="">
+                        注册账号
+                    </a>
+                </div>
+
+            </div>
+
+            <!-- Modal -->
+            <div aria-hidden="true" aria-labelledby="myModalLabel" role="dialog" tabindex="-1" id="forgotPass" class="modal fade">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                            <h4 class="modal-title">忘记密码了?</h4>
+                        </div>
+                        <div class="modal-body">
+                            <p>输入你的电子邮箱地址来重置密码</p>
+                            <input type="text" name="email" placeholder="Email" autocomplete="off" class="form-control placeholder-no-fix">
+                        </div>
+                        <div class="modal-footer">
+                            <button data-dismiss="modal" class="btn btn-default" type="button">Cancel</button>
+                            <button class="btn btn-success" type="button">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- modal -->
+
+        </form>
+    </div>
+</body>
+<!-- js placed at the end of the document so the pages load faster -->
+<script src="__PUBLIC__/js/jquery.js"></script>
+<script src="__PUBLIC__/js/bootstrap.min.js"></script>
+<script>
+    $('.form-signin input[name=username]').focus(function(){
+        var alert = $('#alert');
+        if(alert.length > 0){
+            alert.remove();
+        }
+    });
+    $('.form-signin').submit(function(){
+        var username = $.trim($('input[name=username]').val());
+        if(username == ''){
+            $(this).find('input[name=username]').before('<div id="alert" class="alert alert-danger" role="alert">请输入用户名</div>');
+            return false;
+        }
+    })
+</script>
+</html>

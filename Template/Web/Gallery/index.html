@@ -1,0 +1,108 @@
+<include file="Public:header" />
+<include file="Public:nav" />
+<div data-am-widget="titlebar" class="am-titlebar am-titlebar-default vivi-titlebar-default" >
+    <h2 class="am-titlebar-title">
+        图文生活
+    </h2>
+
+    <nav class="am-titlebar-nav">
+        <a href="#" class="">more &raquo;</a>
+    </nav>
+</div>
+
+<div class="vivi-gallery-wrap">
+    <ul id="masonry" class="am-gallery am-gallery-bordered vivi-masonry am-cf" data-page>
+        <!--li elements here-->
+    </ul>
+</div>
+
+<include file="Public:footer" />
+<script type="text/javascript" src="__PUBLIC__/js/masonry-docs.min.js"></script>
+<script type="text/javascript">
+    $().ready(function(){
+        loadListAjax({"curpage":1},true);
+
+        function loadListAjax(param,init){
+            $.ajax({
+                type: 'post',
+                url: '__CONTROLLER__/gallerylist',
+                data: param,
+                dataType: 'json',
+                success: function(res) {
+                    if(res.error==1) return false;
+                    var data = res.data;
+                    var list = data.list;
+                    var $elems = [];
+                    for (var i = 0; i < list.length; i++) {
+                        $elems.push(loadListContent(list[i]));
+                    }
+                    var $container = $('#masonry');
+                    var oldLiItem = $container.find("li");
+                    $container.append($elems);
+                    if (init) {
+                        $("#masonry").attr("data-page",2);
+                        //计算瀑布流内容块之间的距离
+                        var liWidth = $container.find("li").width();
+                        var masonryWidth = $container.width();
+                        var gutter = masonryWidth - liWidth * 2;
+//                        console.log(masonryWidth+':'+liWidth+':'+gutter);
+                        //给瀑布流设置宽度
+//                        $container.width(masonryWidth+gutter);
+//                        $container.find("li").width(liWidth);
+                        $container.imagesLoaded(function() {
+                            $container.masonry({
+                                itemSelector: 'li',
+                                columnWidth: liWidth,
+                                gutter: gutter,//列的间隙
+                                isAnimated: true, //使用jquery的布局变化，是否启用动画效果
+                                isFitWidth: true//自适应宽度
+                            });
+                        });
+                    }
+                    else{
+                        //分页
+                        if (param.curpage) {
+                            var page = parseInt($("#masonry").attr("data-page"));
+                            page++;
+                            $("#masonry").attr("data-page",page);
+                            $container.imagesLoaded(function() {
+                                $container.masonry('appended', $elems);
+                            });
+                        }
+                        else{
+                            $container.imagesLoaded(function() {
+                                $container.masonry('appended', $elems);
+                                $container.masonry('remove', oldLiItem).masonry('layout');
+                            });
+                        }
+                    }
+                }
+            })
+        }
+
+        function loadListContent(content){
+            var liEle = document.createElement("li");
+            var liHTML = '' +
+                '<div class="am-gallery-item vivi-gallery-item">'+
+                    '<a href="{:U("gallery/'+content.id+'")}" class="">'+
+                        '<img src="'+content.src[0]+'?imageView2/2/w/200"  alt="'+content.title+'"/>'+
+                        '<div class="vivi-gallery-desc">'+
+                            '<h3 class="am-gallery-title">'+content.title+'</h3>'+
+                            '<div class="am-gallery-desc">'+content.post_time+'</div>'+
+                        '</div>'+
+                    '</a>'+
+                '</div>';
+            liEle.innerHTML = liHTML;
+            return liEle;
+        }
+
+        $(window).scroll(function(e){
+            var sumScroll = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            if ($(window).scrollTop() >= sumScroll) {
+                var page = parseInt($("#masonry").attr("data-page"));
+                loadListAjax({"curpage":page});
+            }
+        });
+
+    })
+</script>

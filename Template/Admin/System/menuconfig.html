@@ -1,0 +1,329 @@
+<include file="Public:header" />
+<body>
+    <include file="Public:nav" />
+    <include file="Public:menu" />
+    <!--main content start-->
+    <section id="main-content">
+        <section class="wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <!--breadcrumbs start -->
+                    <ul class="breadcrumb">
+                        <li><a href="#">系统设置</a></li>
+                        <li class="active">菜单管理</li>
+                    </ul>
+                    <!--/breadcrumbs end -->
+                </div>
+            </div>
+
+            <div class="row">
+                <!--menu edit start-->
+                <div class="col-md-6 col-lg-6">
+                    <!--collapse start-->
+                    <div class="panel-group m-bot20 vivi-according" id="accordion">
+                        <volist name="menuconfig" id="li">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h4 class="panel-title" id="menu-li-{$li.id}">
+                                    <a class="accordion-toggle" data-toggle="collapse" data-parent="" href="#{$li.id}">
+                                        {$li.name}
+                                    </a>
+                                    <div class="pull-right">
+                                        <button class="btn btn-primary btn-xs" onclick="editMenu('{$li.id}');"><i class="icon-pencil"></i></button>
+                                        <!--没有二级菜单的一级菜单 显示删除-->
+                                        <empty name="li.child">
+                                        <button class="btn btn-danger btn-xs" onclick="delMenu('{$li.id}');"><i class="icon-trash "></i></button>
+                                        </empty>
+                                        <!--/显示删除-->
+                                    </div>
+                                    <!--<span class="pull-right"><i class="icon-angle-right"></i></span>-->
+                                </h4>
+                                <!--edit this menu form-->
+                                <section class="panel hidden" id="edit-section-{$li.id}">
+                                    <div class="panel-body">
+                                        <form onsubmit="return false;">
+                                            <input type="hidden" name="type" value="edit" />
+                                            <input type="hidden" name="id" value="{$li.id}" />
+                                            <div class="form-group">
+                                                <label class="control-label">名称：</label>
+                                                <input class="form-control" name="name" type="text" value="{$li.name}" autocomplete="off" />
+                                            </div>
+                                            <button class="btn btn-primary" data-type="topmenu" data-loading-text="保存中..." onclick="saveMenu('{$li.id}', this);">保存</button>
+                                            <button class="btn btn-default" onclick="cancelEdit('{$li.id}');">取消</button>
+                                        </form>
+                                    </div>
+                                </section>
+                                <!--/edit this menu form-->
+                            </div>
+                            <div id="{$li.id}" class="panel-collapse collapse in">
+                                <ul class="list-group">
+                                    <volist name="li.child" id="child">
+                                        <li class="list-group-item clearfix" id="menu-li-{$child.id}">
+                                            <p class="pull-left menu-title">{$child.name}</p>
+                                            <div class="pull-right">
+                                                <button class="btn btn-primary btn-xs" onclick="editMenu('{$child.id}');"><i class="icon-pencil"></i></button>
+                                                <button class="btn btn-danger btn-xs" onclick="delMenu('{$child.id}');"><i class="icon-trash "></i></button>
+                                            </div>
+                                        </li>
+                                        <!--edit this menu form-->
+                                        <section class="panel hidden" id="edit-section-{$child.id}">
+                                            <div class="panel-body">
+                                                <form onsubmit="return false;">
+                                                    <input type="hidden" name="type" value="edit" />
+                                                    <input type="hidden" name="id" value="{$child.id}" />
+                                                    <div class="form-group">
+                                                        <label class="control-label">名称：</label>
+                                                        <input class="form-control" name="name" type="text" value="{$child.name}" autocomplete="off" />
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="control-label">链接：</label>
+                                                        <input class="form-control" name="link" type="text" value="{$child.link}" />
+                                                    </div>
+                                                    <button class="btn btn-primary" data-type="childmenu" data-loading-text="保存中..." onclick="saveMenu('{$child.id}', this);">保存</button>
+                                                    <button class="btn btn-default" onclick="cancelEdit('{$child.id}');">取消</button>
+                                                </form>
+                                            </div>
+                                        </section>
+                                        <!--/edit this menu form-->
+                                    </volist>
+                                </ul>
+                            </div>
+                        </div>
+                        </volist>
+                    </div>
+                    <!--collapse end-->
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <button class="btn btn-primary pull-right" data-loading-text="菜单生成中..." onclick="rebuildMenu(this);">重新生成菜单</button>
+                        </div>
+                    </div>
+                </div>
+                <!--/menu edit end-->
+
+                <!--add new menu start-->
+                <div class="col-md-6 col-lg-6">
+                    <section class="panel">
+                        <header class="panel-heading">
+                            添加菜单
+                        </header>
+                        <div class="panel-body">
+                            <form id="add-form" onsubmit="return false;">
+                                <input type="hidden" name="type" value="add" />
+                                <div class="form-group">
+                                    <input class="form-control" name="name" type="text" placeholder="输入菜单名称" autocomplete="off" />
+                                </div>
+                                <div class="form-group">
+                                    <input class="form-control" name="link" type="text" placeholder="输入菜单链接" autocomplete="off" disabled="disabled" />
+                                    <p class="help-block">格式： 控制器/方法</p>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label">所属分类：</label>
+                                    <select name="pid" class="form-control">
+                                        <option value="0" selected>一级菜单</option>
+                                        <volist name="menuconfig" id="opt">
+                                            <option value="{$opt.id}">{$opt.name}</option>
+                                        </volist>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary" id="add-btn">添加</button>
+                            </form>
+                        </div>
+                    </section>
+                </div>
+                <!--/add new menu end-->
+            </div>
+
+        </section>
+    </section>
+    <include file="Public:bsmodal" />
+
+<include file="Public:footer" />
+<script>
+//    $('#accordion').on('show.bs.collapse', function () {
+//        var opened = $(this).find('.accordion-toggle:not(.collapsed)');
+//        opened.next().find('i').attr('class', 'icon-angle-down');
+//    });
+//    $('#accordion').on('hide.bs.collapse', function () {
+//        var closed = $(this).find('.accordion-toggle.collapsed');
+//        closed.next().find('i').attr('class', 'icon-angle-right');
+//    });
+
+    //disable input[name=link] when top menu selected
+    $('#add-form select[name=pid]').change(function(){
+        var $linkInput = $('#add-form input[name=link]');
+        if($(this).val()==0){
+            $linkInput.attr('disabled', 'disabled')
+        }else if($linkInput.attr('disabled')=='disabled'){
+            $linkInput.removeAttr('disabled')
+        }
+    });
+
+    //add button
+    $('#add-btn').click(function(e){
+        var $nameInput = $('#add-form').find('input[name=name]');
+        var $linkInput = $('#add-form').find('input[name=link]');
+        if($.trim($nameInput.val())=='') {
+            vToast('菜单名称不能为空');
+            return false;
+        }
+        //顶级菜单不需要验证link
+        if($linkInput.prop('disabled')==false){
+            if($.trim($linkInput.val())=='') {
+                vToast('菜单链接不能为空');
+                return false;
+            }
+        }
+        var data = $('#add-form').serialize();
+        $.ajax({
+            url: '__CONTROLLER__/editmenu',
+            data: data,
+            type: "POST",
+            beforeSend: function()
+            {
+                $('#add-btn').button('loading');
+            },
+            complete: function(){
+                $('#add-btn').button('reset')
+            },
+            success: function(res)
+            {
+                result = res;
+                vToast(result.msg, 2000, function(){
+                    if(result.error==0) location.reload();
+                });
+            },
+            error: function(){
+                vToast('网络繁忙或服务器未响应，请重试！');
+            }
+        });
+    });
+
+    //edit menu [param: menuid]
+    function editMenu(menuid){
+        var $thisLi = $('#menu-li-'+menuid);
+        var $thisSection = $('#edit-section-'+menuid);   //this form section
+        var $sections = $('#accordion').find('section'); //all form sections
+        //once a time
+        for(var i=0; i<$sections.length; i++){
+            if(!$($sections[i]).hasClass('hidden')){
+                vToast('一次只能编辑一条');
+                return false;
+            }
+        }
+        $thisLi.addClass('hidden');
+        $thisSection.removeClass('hidden');
+    }
+
+    //delete confirm [param: menuid]
+    function delMenu(menuid){
+        bsConfirm('确定删除此菜单吗【'+menuid+'】？', menuid);
+    }
+    //delete menu [param: confirm button element]
+    function confirm(btnElem){
+        var menuid = $(btnElem).parent().siblings().find('input[name=id]').val();
+        var $bsconfirm = $('#bs-confirm');
+//        console.log(menuid);
+        $.ajax({
+            url: "{:U('deletemenu')}",
+            type: "POST",
+            data: {
+                menuid: menuid
+            },
+            beforeSend: function(){
+                $bsconfirm.find('#confirm-btn').button('loading')
+            },
+            complete: function(){
+                $bsconfirm.find('#confirm-btn').button('reset');
+                $bsconfirm.modal('hide');
+            },
+            success: function (res) {
+                var result = res;
+                vToast(result.msg, 2000, function(){
+                    if(result.error==0){
+                        top.location.reload()
+                    }
+                });
+            },
+            error: function(){
+                vToast('网络繁忙或服务器未响应，请重试！');
+            }
+        });
+    }
+
+    //save menu [param: menuid]
+    function saveMenu(menuid, btn){
+        var $thisBtn = $(btn);
+        var $thisSection = $('#edit-section-'+menuid);   //this form section
+        var $thisForm = $thisSection.find('form');
+        if($.trim($thisForm.find('input[name=name]').val())=='') {
+            vToast('菜单名称不能为空');
+            return false;
+        }
+        //顶级菜单不需要验证link
+        if($thisBtn.attr('data-type')!='topmenu'){
+            if($.trim($thisForm.find('input[name=link]').val())=='') {
+                vToast('菜单链接不能为空');
+                return false;
+            }
+        }
+
+        $.ajax({
+            url: "{:U('editmenu')}",
+            type: 'POST',
+            data: $thisForm.serialize(),
+            beforeSend: function(){
+                $thisBtn.button('loading')
+            },
+            complete: function(){
+                $thisBtn.button('reset')
+            },
+            success: function(res){
+                var result = res;
+                vToast(result.msg, 2000, function(){
+                    if(result.error==0){
+                        top.location.reload()
+                    }
+                });
+            },
+            error: function(){
+                vToast('网络繁忙或服务器未响应，请重试！');
+            }
+        })
+    }
+
+    //cancel edit menu [param: menuid]
+    function cancelEdit(menuid){
+        var $thisLi = $('#menu-li-'+menuid);
+        var $thisSection = $('#edit-section-'+menuid);   //this form section
+        $thisSection.find('form')[0].reset();  //reset form
+        $thisSection.addClass('hidden');
+        $thisLi.removeClass('hidden');
+    }
+
+    //rebuild menu
+    function rebuildMenu(btnElem){
+        var $btn = $(btnElem);
+        $.ajax({
+            url: "{:U('rebuildmenu')}",
+            type: "POST",
+            data: {time: new Date().getTime()},
+            beforeSend: function(){
+                $btn.button('loading')
+            },
+            complete: function(){
+                $btn.button('reset')
+            },
+            success: function(res){
+                var result = res;
+                vToast(result.msg, 2000, function(){
+                    if(result.error==0){
+                        top.location.reload()
+                    }
+                });
+            },
+            error: function(){
+                vToast('网络繁忙或服务器未响应，请重试！');
+            }
+        })
+    }
+</script>

@@ -1,0 +1,336 @@
+<include file="Public:header" />
+<body>
+<include file="Public:nav" />
+<include file="Public:menu" />
+<!--main content start-->
+<section id="main-content">
+    <section class="wrapper">
+        <div class="row">
+            <div class="col-lg-12">
+                <!--breadcrumbs start -->
+                <ul class="breadcrumb">
+                    <li><a href="#">图文管理</a></li>
+                    <li class="active">编辑图文</li>
+                </ul>
+                <!--breadcrumbs end -->
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <section class="panel">
+                    <header class="panel-heading">
+                        编辑图文
+                    </header>
+                    <div class="panel-body">
+                        <div class="form">
+                            <form class="cmxform form-horizontal tasi-form" id="post-form">
+                                <input type="hidden" name="id" value="{$gallery.id}"/>
+
+                                <div class="form-group ">
+                                    <label for="title" class="control-label col-lg-2" data-validator="title">图文标题：</label>
+                                    <div class="col-lg-10">
+                                        <input class=" form-control" id="title" type="text" name="title" value="{$gallery.title}" minlength="1" placeholder="输入图文标题（必填）" />
+                                    </div>
+                                </div>
+
+                                <div class="form-group ">
+                                    <label for="subtitle" class="control-label col-lg-2" data-validator="sub_title">副标题：</label>
+                                    <div class="col-lg-10">
+                                        <input class="form-control " id="subtitle" type="text" name="sub_title" value="{$gallery.sub_title}" placeholder="输入副标题（可选）" />
+                                    </div>
+                                </div>
+
+                                <div class="form-group ">
+                                    <label class="control-label col-lg-2" data-validator="category[]">图文分类（至少选择一个）：</label>
+                                    <div class="col-lg-10">
+                                        <?php
+                                        foreach($cats as $v){
+                                            echo "<label class='checkbox-inline'><input type='checkbox' value='$v[cat_id]' name='category[]'";
+                                                if(in_array($v['cat_id'],$gallery['category'])){
+                                                    echo "checked";
+                                                }
+                                                echo " />";
+                                                echo "&nbsp;".$v['cat_name']."&nbsp;</label>";
+                                            }
+                                        ?>
+                                    </div>
+                                </div>
+
+                                <div class="form-group ">
+                                    <label class="control-label col-lg-12" data-validator="gallery">图片集（至少一张）：</label>
+                                    <div class="panel panel-default">
+                                        <div class="panel-body">
+                                            <div class="row">
+                                                <!--exist pictures-->
+                                                <volist name="gallery.src" id="src" key="k">
+                                                <div class="col-xs-6 col-sm-4 col-md-3 col-lg-2">
+                                                    <div class="thumbnail vivi-admin-gallery">
+                                                        <span class="badge bg-info number">{$k}</span>
+                                                        <span class="badge bg-info remove hidden"><i class="icon-remove"></i></span>
+                                                        <img src="{$src}?imageView2/2/w/200" data-src="{$src}" alt="">
+                                                    </div>
+                                                </div>
+                                                </volist>
+                                                <!--add new pictures-->
+                                                <div class="col-xs-6 col-sm-4 col-md-3 col-lg-2">
+                                                    <div class="thumbnail">
+                                                        <img src="__PUBLIC__/img/admin/add_pic.png" alt="" id="thumb">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group ">
+                                    <label for="description" class="control-label col-lg-2" data-validator="description">图文描述（可选）：</label>
+                                    <div class="col-lg-10">
+                                        <textarea class="form-control " id="description" name="description" style="width:100%;height:360px;">{$gallery.description}</textarea>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-lg-offset-2 col-lg-10">
+                                        <button class="btn btn-primary" type="button" data-loading-text="提交中..." onclick="editGallery(this);">保存</button>
+                                        <eq name="gallery.status" value="0">
+                                            <button class="btn btn-danger" type="button" data-loading-text="提交中..." onclick="publishGallery(this);">发布</button>
+                                            <else/>
+                                            <button class="btn btn-danger" type="button" data-loading-text="提交中..." onclick="publishGallery(this);" disabled="disabled">发布</button>
+                                        </eq>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                    </div>
+                </section>
+            </div>
+        </div>
+    </section>
+</section>
+
+<include file="Public:bsmodal" />
+
+<include file="Public:footer" />
+
+<script src="__PUBLIC__/kindeditor/kindeditor-all-min.js"></script>
+<!--<script src="__PUBLIC__/js/kindeditor/plugins/code/prettify.js"></script>-->
+<script type="text/javascript" src="__PUBLIC__/js/jquery.validate.min.js"></script>
+<script>
+    $(document).ready(function() {
+        //图片传七牛
+        $.ajax({
+            url: '__PUBLIC__/kindeditor/misc/keQiniu.php?act=getToken&type=3', async: false, success: function (data) {
+                token1 = data.token1;
+                token2 = data.token2;
+                var editor = KindEditor.create('#description', {
+                    uploadJson: 'http://upload.qiniu.com/',
+                    filePostName: 'file',
+                    allowFileManager: true,
+                    fileManagerJson: '__PUBLIC__/kindeditor/misc/keQiniu.php?act=fileManage',
+                    extraFileUploadParams: {token: token2},
+                    token: token1,
+                    resizeType: 1,
+                    afterCreate: function () { this.sync();},
+                    afterBlur: function () { this.sync();},
+                    afterChange: function () { this.sync();}
+                });
+                //单独上传缩略图
+                $('#thumb').click(function () {
+                    //find last gallery item
+                    var thisItem = $(this).parent().parent();
+                    editor.loadPlugin('image', function () {
+                        editor.plugin.imageDialog({
+                            //imageUrl: $('#thumbImgUrl').val(),
+                            clickFn: function (url, title, width, height, border, align) {
+                                //选择图片'确定'后逻辑
+                                addGalleryItem(thisItem, url);
+                                editor.hideDialog();
+                            }
+                        });
+                    });
+                });
+            }
+        });
+
+        //jquery validate
+        var validator = $("#post-form").validate({
+            //表单验证错误提示放在label后面
+            errorPlacement: function (error, element) {
+                // Append error within linked label
+                $(element)
+                        .closest("form")
+                        .find("label[data-validator='" + element.attr("name") + "']")  //找到label中data-validator属性为验证元素name属性
+                        .append(error);
+            },
+            errorElement: "span",
+            //验证逻辑 待验证元素的name属性
+            rules: {
+                title: {
+                    required: true,
+                    maxlength: 50
+                },
+                sub_title: {
+                    maxlength: 100
+                },
+//                author: {
+//                    required: true,
+//                    maxlength: 50
+//                },
+                "category[]": {
+                    required: true
+                }
+//                content: {
+//                    required: true
+//                }
+            },
+            //提示信息
+            messages: {
+                title: {
+                    required: " (必须填写)",
+                    maxlength: " (不能超过50个字)"
+                },
+                sub_title: {
+                    maxlength: " (不能超过100个字)"
+                },
+//                author: {
+//                    required: " (必须填写)",
+//                    maxlength: " (不能超过50个字)"
+//                },
+                "category[]": {
+                    required: " (至少选择一个分类)"
+                }
+//                content:{
+//                    required: " (必须填写)"
+//                }
+            },
+            // kindeditor编辑器会将textarea隐藏
+            // 所以需要将ignore:hidden去掉才能正确验证
+            ignore: ""
+        });
+    });
+
+
+    //add a new item to gallery
+    function addGalleryItem(addItem, url){
+        var lastItemIndex = addItem.prev().length == 0 ? 0 : addItem.prev().find('.badge').text();
+        var newItem = ''+
+            '<div class="col-xs-6 col-sm-4 col-md-3 col-lg-2">'+
+                '<div class="thumbnail vivi-admin-gallery">'+
+                    '<span class="badge bg-info number">'+(parseInt(lastItemIndex)+1)+'</span>'+
+                    '<span class="badge bg-info remove hidden"><i class="icon-remove"></i></span>'+
+                    '<img src="'+url+'?imageView2/2/w/200" data-src="'+url+'" alt="">'+
+                '</div>'+
+            '</div>';
+        addItem.before($(newItem))
+    }
+
+    //click badge can remove this
+    $('.panel')
+            .on('mouseenter', '.number', function(){
+                //移入
+                $(this).addClass('hidden').next().removeClass('hidden');
+            })
+            .on('mouseleave', '.remove', function(){
+                //移出
+                $(this).addClass('hidden').prev().removeClass('hidden');
+            })
+            .on('click', '.remove', function(){
+                var thisItem = $(this).parent().parent();
+                thisItem.remove()
+            });
+
+    //edit gallery
+    var editGallery = function(thisBtn){
+        var $editBtn = $(thisBtn);
+        if ($('#post-form').valid()) {
+            //表单验证成功逻辑
+            var act = 'edit';  //编辑保存
+            //gallery must has least 1 item
+            var galleryObj = $('.vivi-admin-gallery');
+            if(galleryObj.length < 1){
+                $('label[data-validator=gallery]').append('<span class="error">(至少上传一张图片)</span>');
+                vToast('至少上传一张图片');
+                return false;
+            }
+
+            var data = $('#post-form').serialize() + '&act=' + act;
+
+            //将所有图片地址放入参数数组
+            galleryObj.each(function(index, element){
+                src = $(element).find('img').attr('data-src');
+                data = data + '&src[]=' + encodeURIComponent(src);
+            });
+            $.ajax({
+                url: '__CONTROLLER__/dopost',
+                data: data,
+                type: "POST",
+                beforeSend: function() {
+                    $editBtn.button('loading')
+                },
+                complete: function(){
+                    $editBtn.button('reset')
+                },
+                success: function(res) {
+                    result = res;  //vToast的callback拿不到res，所以需要先给result
+                    vToast(result.msg, 2000, function(){
+                        if(result.error==0) top.location.reload();
+                    });
+                },
+                error: function(){
+                    vToast('网络繁忙或服务器未响应，请重试！');
+                }
+            });
+        }else{
+            //验证失败逻辑
+            vToast('请完整填写内容')
+        }
+    };
+
+    //publish gallery
+    var publishGallery = function(thisBtn){
+        var $publishBtn = $(thisBtn);
+        if ($('#post-form').valid()) {
+            //表单验证成功逻辑
+            var act = 'publish';  //编辑发布
+            //gallery must has least 1 item
+            var galleryObj = $('.vivi-admin-gallery');
+            if(galleryObj.length < 1){
+                $('label[data-validator=gallery]').append('<span class="error">(至少上传一张图片)</span>');
+                vToast('至少上传一张图片');
+                return false;
+            }
+
+            var data = $('#post-form').serialize() + '&act=' + act;
+
+            //将所有图片地址放入参数数组
+            galleryObj.each(function(index, element){
+                src = $(element).find('img').attr('data-src');
+                data = data + '&src[]=' + encodeURIComponent(src);
+            });
+            $.ajax({
+                url: '__CONTROLLER__/dopost',
+                data: data,
+                type: "POST",
+                beforeSend: function() {
+                    $publishBtn.button('loading')
+                },
+                complete: function(){
+                    $publishBtn.button('reset')
+                },
+                success: function(res) {
+                    result = res;  //vToast的callback拿不到res，所以需要先给result
+                    vToast(result.msg, 2000, function(){
+                        if(result.error==0) top.location.reload();
+                    });
+                },
+                error: function(){
+                    vToast('网络繁忙或服务器未响应，请重试！');
+                }
+            });
+        }else{
+            //验证失败逻辑
+            vToast('请完整填写内容')
+        }
+    };
+</script>

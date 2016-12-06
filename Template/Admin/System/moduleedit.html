@@ -1,0 +1,185 @@
+<include file="Public:header" />
+<body>
+<include file="Public:nav" />
+<include file="Public:menu" />
+<!--main content start-->
+<section id="main-content">
+    <section class="wrapper">
+        <div class="row">
+            <div class="col-lg-12">
+                <!--breadcrumbs start -->
+                <ul class="breadcrumb">
+                    <li><a href="#">系统管理</a></li>
+                    <li class="active">编辑模块</li>
+                </ul>
+                <!--breadcrumbs end -->
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <section class="panel">
+                    <header class="panel-heading">
+                        编辑页面模块
+                    </header>
+                    <div class="panel-body">
+                        <div class="form">
+                            <form class="cmxform form-horizontal tasi-form" id="post-form">
+                                <input type="hidden" name="id" value="{$gallery.id}"/>
+
+                                <div class="form-group ">
+                                    <label for="alias" class="control-label col-lg-2" data-validator="alias">名称：</label>
+                                    <div class="col-lg-10">
+                                        <input class=" form-control" id="alias" type="text" name="alias" value="" placeholder="输入名称（必填）" />
+                                    </div>
+                                </div>
+
+                                <div class="form-group ">
+                                    <label for="name" class="control-label col-lg-2" data-validator="name">模块名：</label>
+                                    <div class="col-lg-10">
+                                        <input class="form-control " id="name" type="text" name="name" value="" placeholder="输入模块名（必填）" />
+                                    </div>
+                                </div>
+
+                                <div class="form-group ">
+                                    <label for="content" class="control-label col-lg-2" data-validator="content">模块HTML内容（必填）：</label>
+                                    <div class="col-lg-10">
+                                        <textarea class="form-control " id="content" name="content" style="width:100%;height:360px;"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-lg-offset-2 col-lg-10">
+                                        <button class="btn btn-primary" type="button" data-loading-text="提交中..." onclick="editModule(this);">保存</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </section>
+</section>
+
+<include file="Public:bsmodal" />
+
+<include file="Public:footer" />
+
+<script src="__PUBLIC__/kindeditor/kindeditor-all-min.js"></script>
+<script type="text/javascript" src="__PUBLIC__/js/jquery.validate.min.js"></script>
+<script>
+    $(document).ready(function() {
+        //图片传七牛
+        $.ajax({
+            url: '__PUBLIC__/kindeditor/misc/keQiniu.php?act=getToken&type=3', async: false, success: function (data) {
+                token1 = data.token1;
+                token2 = data.token2;
+                var editor = KindEditor.create('#description', {
+                    uploadJson: 'http://upload.qiniu.com/',
+                    filePostName: 'file',
+                    allowFileManager: true,
+                    fileManagerJson: '__PUBLIC__/kindeditor/misc/keQiniu.php?act=fileManage',
+                    extraFileUploadParams: {token: token2},
+                    token: token1,
+                    resizeType: 1,
+                    afterCreate: function () { this.sync();},
+                    afterBlur: function () { this.sync();},
+                    afterChange: function () { this.sync();}
+                });
+            }
+        });
+
+        //jquery validate
+        var validator = $("#post-form").validate({
+            //表单验证错误提示放在label后面
+            errorPlacement: function (error, element) {
+                // Append error within linked label
+                $(element)
+                        .closest("form")
+                        .find("label[data-validator='" + element.attr("name") + "']")  //找到label中data-validator属性为验证元素name属性
+                        .append(error);
+            },
+            errorElement: "span",
+            //验证逻辑 待验证元素的name属性
+            rules: {
+                alias: {
+                    required: true,
+                    maxlength: 50
+                },
+                name: {
+                    maxlength: 50
+                },
+                content: {
+                    required: true
+                }
+            },
+            //提示信息
+            messages: {
+                alias: {
+                    required: " (必须填写)",
+                    maxlength: " (不能超过50个字)"
+                },
+                name: {
+                    maxlength: " (不能超过50个字母)"
+                },
+                "category[]": {
+                    required: " (至少选择一个分类)"
+                },
+                content:{
+                    required: " (必须填写)"
+                }
+            },
+            // kindeditor编辑器会将textarea隐藏
+            // 所以需要将ignore:hidden去掉才能正确验证
+            ignore: ""
+        });
+    });
+
+    //edit module  //todo
+    var editModule = function(thisBtn){
+        var $editBtn = $(thisBtn);
+        if ($('#post-form').valid()) {
+            //表单验证成功逻辑
+            var act = 'edit';  //编辑保存
+            //gallery must has least 1 item
+            var galleryObj = $('.vivi-admin-gallery');
+            if(galleryObj.length < 1){
+                $('label[data-validator=gallery]').append('<span class="error">(至少上传一张图片)</span>');
+                vToast('至少上传一张图片');
+                return false;
+            }
+
+            var data = $('#post-form').serialize() + '&act=' + act;
+
+            //将所有图片地址放入参数数组
+            galleryObj.each(function(index, element){
+                src = $(element).find('img').attr('data-src');
+                data = data + '&src[]=' + encodeURIComponent(src);
+            });
+            $.ajax({
+                url: '__CONTROLLER__/dopost',
+                data: data,
+                type: "POST",
+                beforeSend: function() {
+                    $editBtn.button('loading')
+                },
+                complete: function(){
+                    $editBtn.button('reset')
+                },
+                success: function(res) {
+                    result = res;  //vToast的callback拿不到res，所以需要先给result
+                    vToast(result.msg, 2000, function(){
+                        if(result.error==0) top.location.reload();
+                    });
+                },
+                error: function(){
+                    vToast('网络繁忙或服务器未响应，请重试！');
+                }
+            });
+        }else{
+            //验证失败逻辑
+            vToast('请完整填写内容')
+        }
+    };
+
+</script>

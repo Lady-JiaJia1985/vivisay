@@ -1,0 +1,53 @@
+@charset "UTF-8";
+/*reset flatlab top menu avatar*/
+.vivi-top-menu li>a>img {
+    max-height: 2em;
+}
+
+/*reset flatlab .wrapper*/
+.wrapper {
+    min-height: 800px;
+}
+
+/*input form-control color*/
+.form-control {
+    color: #4a4a4a;
+}
+
+/*form validate error color*/
+form label .error {
+    color: #CC0033;
+}
+
+/*reset pagination .li cursor*/
+#pagination li {
+    cursor: pointer;
+}
+
+/*gallery thumbnail preview*/
+.vivi-admin-gallery {
+    position: relative;
+}
+.vivi-admin-gallery .badge {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+}
+.thumbnail #thumb {
+    cursor: pointer;
+}
+
+/*reset according list-group*/
+.vivi-according .list-group-item {
+    border: none;
+}
+.vivi-according .menu-title {
+    margin: 0;
+    text-indent: 1em;
+}
+
+/*toast modal message style*/
+.vivi-modal-msg {
+    padding: 2rem 0;
+    text-align: center;
+}
